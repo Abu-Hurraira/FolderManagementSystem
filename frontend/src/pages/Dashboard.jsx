@@ -6,33 +6,21 @@ function Dashboard() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const [sections, setSections] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
-      navigate("/"); // redirect if not logged in
+      navigate("/");
       return;
     }
 
-    const fetchSections = async () => {
-      try {
-        const res = await axios.get(
-          `http://127.0.0.1:8000/auth/sections/${user.teacherId}`
-        );
+    axios
+      .get(`http://127.0.0.1:8000/auth/sections/${user.teacherId}`)
+      .then((res) => {
         if (res.data.status_code === 200) {
           setSections(res.data.data);
-        } else {
-          alert(res.data.message);
         }
-      } catch (err) {
-        console.error(err);
-        alert("Failed to load sections. Try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSections();
+      })
+      .catch(() => alert("Error loading sections"));
   }, [navigate, user]);
 
   const handleLogout = () => {
@@ -43,27 +31,63 @@ function Dashboard() {
   if (!user) return null;
 
   return (
-    <div style={{ maxWidth: "600px", margin: "50px auto" }}>
-      <h2>Welcome, {user.fullName}</h2>
-      <button onClick={handleLogout} style={{ marginBottom: "20px" }}>
-        Logout
-      </button>
-      <h3>Your Sections:</h3>
-      {loading ? (
-        <p>Loading sections...</p>
-      ) : sections.length > 0 ? (
-        <ul>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2>Welcome, {user.fullName}</h2>
+
+        <h3 style={{ marginTop: "20px" }}>Your Sections</h3>
+
+        <ul style={styles.list}>
           {sections.map((sec) => (
-            <li key={sec.sectionId}>
+            <li key={sec.sectionId} style={styles.listItem}>
               {sec.sectionName} - {sec.courseName}
             </li>
           ))}
         </ul>
-      ) : (
-        <p>No sections assigned.</p>
-      )}
+
+        <button onClick={handleLogout} style={styles.button}>
+          Logout
+        </button>
+      </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    height: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+  card: {
+    width: "400px",
+    padding: "30px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+    textAlign: "center",
+    backgroundColor: "#fff",
+  },
+  list: {
+    listStyle: "none",
+    padding: 0,
+    marginTop: "15px",
+    marginBottom: "20px",
+  },
+  listItem: {
+    padding: "8px",
+    borderBottom: "1px solid #eee",
+  },
+  button: {
+    padding: "10px",
+    backgroundColor: "green",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+};
 
 export default Dashboard;
