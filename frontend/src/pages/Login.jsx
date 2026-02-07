@@ -5,11 +5,13 @@ import { useNavigate } from "react-router-dom";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setError("");
 
     try {
@@ -26,84 +28,57 @@ function Login() {
       }
     } catch (err) {
       console.error(err);
-      setError("Server error");
+      setError("Server error. Try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={{ marginBottom: "20px" }}>Teacher Login</h2>
+    <div className="container vh-100 d-flex justify-content-center align-items-center">
+      <div className="card shadow-lg p-4" style={{ width: "100%", maxWidth: "400px" }}>
+        <h3 className="text-center mb-4">Teacher Login</h3>
 
-        <form onSubmit={handleLogin} style={styles.form}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={styles.input}
-          />
+        <form onSubmit={handleLogin}>
+          <div className="mb-3">
+            <input
+              type="email"
+              className="form-control"
+              placeholder="Enter Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={styles.input}
-          />
+          <div className="mb-3">
+            <input
+              type="password"
+              className="form-control"
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-          <button type="submit" style={styles.button}>
-            Login
+          <button
+            type="submit"
+            className="btn btn-success w-100"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
 
-          {error && <p style={styles.error}>{error}</p>}
+          {error && (
+            <div className="alert alert-danger mt-3 py-2">
+              {error}
+            </div>
+          )}
         </form>
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-  },
-  card: {
-    width: "350px",
-    padding: "30px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-    textAlign: "center",
-    backgroundColor: "#fff",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  input: {
-    padding: "10px",
-    marginBottom: "15px",
-    border: "1px solid #ccc",
-    borderRadius: "5px",
-  },
-  button: {
-    padding: "10px",
-    backgroundColor: "green",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-  error: {
-    color: "red",
-    marginTop: "10px",
-  },
-};
 
 export default Login;

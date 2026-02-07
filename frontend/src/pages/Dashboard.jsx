@@ -6,6 +6,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
@@ -13,15 +14,24 @@ function Dashboard() {
       return;
     }
 
-    axios
-      .get(`http://127.0.0.1:8000/auth/sections/${user.teacherId}`)
-      .then((res) => {
+    const fetchSections = async () => {
+      try {
+        const res = await axios.get(
+          `http://127.0.0.1:8000/auth/sections/${user.teacherId}`
+        );
+
         if (res.data.status_code === 200) {
           setSections(res.data.data);
         }
-      })
-      .catch(() => alert("Error loading sections"));
-  }, [navigate, user]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSections();'[-'
+  }, [user, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -31,63 +41,38 @@ function Dashboard() {
   if (!user) return null;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2>Welcome, {user.fullName}</h2>
+    <div className="container mt-5">
+      <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "700px" }}>
+        
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4 className="mb-0">Welcome, {user.fullName}</h4>
+          <button className="btn btn-success" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
 
-        <h3 style={{ marginTop: "20px" }}>Your Sections</h3>
+        <hr />
 
-        <ul style={styles.list}>
-          {sections.map((sec) => (
-            <li key={sec.sectionId} style={styles.listItem}>
-              {sec.sectionName} - {sec.courseName}
-            </li>
-          ))}
-        </ul>
+        <h5 className="mb-3">Your Sections</h5>
 
-        <button onClick={handleLogout} style={styles.button}>
-          Logout
-        </button>
+        {loading ? (
+          <div className="text-center">Loading...</div>
+        ) : sections.length > 0 ? (
+          <ul className="list-group">
+            {sections.map((sec, index) => (
+              <li key={index} className="list-group-item">
+                <strong>{sec.sectionName}</strong> — {sec.courseName}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="alert alert-secondary">
+            No sections assigned.
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-  },
-  card: {
-    width: "400px",
-    padding: "30px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-    textAlign: "center",
-    backgroundColor: "#fff",
-  },
-  list: {
-    listStyle: "none",
-    padding: 0,
-    marginTop: "15px",
-    marginBottom: "20px",
-  },
-  listItem: {
-    padding: "8px",
-    borderBottom: "1px solid #eee",
-  },
-  button: {
-    padding: "10px",
-    backgroundColor: "green",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-};
 
 export default Dashboard;
